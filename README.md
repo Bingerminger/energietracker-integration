@@ -21,12 +21,24 @@ self-hosted energy cockpit for your home; this custom integration reads it.
 
 ## Installation
 
-**With HACS** (until the integration is in the HACS default list, as a custom
-repository):
+Until the integration is in the HACS default list, you add it as a **custom
+repository**. The button above opens it directly.
+
+**Home Assistant 2026.11 or later: in the Marketplace.** Since 2026.11, HACS is
+built into Home Assistant as the **Marketplace**.
+
+1. **Connect the Marketplace to GitHub once.** It shows a code that you enter at
+   `https://github.com/login/device`. The connection only reads public
+   information; the Marketplace needs it for custom repositories.
+2. Add the custom repository
+   `https://github.com/Bingerminger/energietracker-integration`, type **Integration**.
+3. Open **Energietracker**, **Download**, then restart Home Assistant.
+4. **Settings → Devices & services → Add integration → Energietracker**.
+
+**Home Assistant 2026.3 to 2026.10: with HACS.**
 
 1. HACS → menu **⋮ → Custom repositories**, add
    `https://github.com/Bingerminger/energietracker-integration`, type **Integration**.
-   The button above does the same.
 2. Open **Energietracker** in HACS, **Download**, then restart Home Assistant.
 3. **Settings → Devices & services → Add integration → Energietracker**.
 
@@ -174,12 +186,26 @@ aus.
 
 ### Installation
 
-**Mit HACS** (bis die Integration in der Standardliste von HACS steht, als
-benutzerdefiniertes Repository):
+Bis die Integration in der Standardliste von HACS steht, fügst du sie als
+**benutzerdefiniertes Repository** hinzu. Der Knopf oben öffnet sie direkt.
+
+**Home Assistant ab 2026.11: im Marketplace.** Seit 2026.11 ist HACS als
+**Marketplace** fest in Home Assistant eingebaut.
+
+1. **Den Marketplace einmal mit GitHub verbinden.** Er zeigt einen Code, den du
+   unter `https://github.com/login/device` eingibst. Die Verbindung liest nur
+   Öffentliches; der Marketplace braucht sie für benutzerdefinierte Repositories.
+2. Das benutzerdefinierte Repository
+   `https://github.com/Bingerminger/energietracker-integration` hinzufügen, Typ
+   **Integration**.
+3. **Energietracker** öffnen, **Herunterladen**, dann Home Assistant neu starten.
+4. **Einstellungen → Geräte & Dienste → Integration hinzufügen → Energietracker**.
+
+**Home Assistant 2026.3 bis 2026.10: mit HACS.**
 
 1. HACS → Menü **⋮ → Benutzerdefinierte Repositories**,
    `https://github.com/Bingerminger/energietracker-integration` eintragen, Typ
-   **Integration**. Der Knopf oben macht dasselbe.
+   **Integration**.
 2. **Energietracker** in HACS öffnen, **Herunterladen**, dann Home Assistant
    neu starten.
 3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → Energietracker**.
