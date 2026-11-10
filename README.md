@@ -1,5 +1,6 @@
 # Energietracker for Home Assistant
 
+[![Open your Home Assistant instance and open this repository in the Marketplace.](https://my.home-assistant.io/badges/marketplace_repository.svg)](https://my.home-assistant.io/redirect/marketplace_repository/?owner=Bingerminger&repository=energietracker-integration&category=integration)
 [![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Bingerminger&repository=energietracker-integration&category=integration)
 
 **English** · [Deutsch](#deutsch)
@@ -22,7 +23,8 @@ self-hosted energy cockpit for your home; this custom integration reads it.
 ## Installation
 
 Until the integration is in the HACS default list, you add it as a **custom
-repository**. The button above opens it directly.
+repository**. The buttons above open it directly: the first in the
+Marketplace (Home Assistant 2026.11 or later), the second in HACS.
 
 **Home Assistant 2026.11 or later: in the Marketplace.** Since 2026.11, HACS is
 built into Home Assistant as the **Marketplace**.
@@ -134,8 +136,16 @@ Settings → Integrations); that needs no integration. See the
 ## Removal
 
 **Settings → Devices & services → Energietracker → ⋮ → Delete**, then remove
-the integration in HACS (or delete the folder
+the integration in the Marketplace or in HACS (or delete the folder
 `custom_components/energietracker`) and restart Home Assistant.
+
+## Questions and bugs
+
+**Bugs and questions about the integration go to the
+[issues](https://github.com/Bingerminger/energietracker-integration/issues) here;**
+ideas for Energietracker itself to the
+[Discussions](https://github.com/Bingerminger/energietracker/discussions) of the
+main project.
 
 ## Privacy
 
@@ -187,7 +197,8 @@ aus.
 ### Installation
 
 Bis die Integration in der Standardliste von HACS steht, fügst du sie als
-**benutzerdefiniertes Repository** hinzu. Der Knopf oben öffnet sie direkt.
+**benutzerdefiniertes Repository** hinzu. Die Knöpfe oben öffnen sie direkt:
+der erste im Marketplace (Home Assistant ab 2026.11), der zweite in HACS.
 
 **Home Assistant ab 2026.11: im Marketplace.** Seit 2026.11 ist HACS als
 **Marketplace** fest in Home Assistant eingebaut.
@@ -303,8 +314,16 @@ Einstellungen → Integrationen); dafür braucht es keine Integration. Siehe
 ### Entfernen
 
 **Einstellungen → Geräte & Dienste → Energietracker → ⋮ → Löschen**, danach
-die Integration in HACS entfernen (oder den Ordner
+die Integration im Marketplace oder in HACS entfernen (oder den Ordner
 `custom_components/energietracker` löschen) und Home Assistant neu starten.
+
+### Fragen und Fehler
+
+**Fehler und Fragen zur Integration gehören in die
+[Issues](https://github.com/Bingerminger/energietracker-integration/issues) hier;**
+Ideen für den Energietracker selbst in die
+[Discussions](https://github.com/Bingerminger/energietracker/discussions) des
+Hauptprojekts.
 
 ### Datenschutz
 
