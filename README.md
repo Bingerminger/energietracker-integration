@@ -1,6 +1,6 @@
 # Energietracker for Home Assistant
 
-[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Bingerminger&repository=energietracker-hacs&category=integration)
+[![Open your Home Assistant instance and open this repository in HACS.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=Bingerminger&repository=energietracker-integration&category=integration)
 
 **English** · [Deutsch](#deutsch)
 
@@ -25,13 +25,13 @@ self-hosted energy cockpit for your home; this custom integration reads it.
 repository):
 
 1. HACS → menu **⋮ → Custom repositories**, add
-   `https://github.com/Bingerminger/energietracker-hacs`, type **Integration**.
+   `https://github.com/Bingerminger/energietracker-integration`, type **Integration**.
    The button above does the same.
 2. Open **Energietracker** in HACS, **Download**, then restart Home Assistant.
 3. **Settings → Devices & services → Add integration → Energietracker**.
 
 **By hand:** copy the folder `custom_components/energietracker` of the
-[latest release](https://github.com/Bingerminger/energietracker-hacs/releases/latest)
+[latest release](https://github.com/Bingerminger/energietracker-integration/releases/latest)
 into the folder `custom_components` of your Home Assistant configuration and
 restart Home Assistant.
 
@@ -178,14 +178,14 @@ aus.
 benutzerdefiniertes Repository):
 
 1. HACS → Menü **⋮ → Benutzerdefinierte Repositories**,
-   `https://github.com/Bingerminger/energietracker-hacs` eintragen, Typ
+   `https://github.com/Bingerminger/energietracker-integration` eintragen, Typ
    **Integration**. Der Knopf oben macht dasselbe.
 2. **Energietracker** in HACS öffnen, **Herunterladen**, dann Home Assistant
    neu starten.
 3. **Einstellungen → Geräte & Dienste → Integration hinzufügen → Energietracker**.
 
 **Von Hand:** den Ordner `custom_components/energietracker` aus dem
-[neuesten Release](https://github.com/Bingerminger/energietracker-hacs/releases/latest)
+[neuesten Release](https://github.com/Bingerminger/energietracker-integration/releases/latest)
 in den Ordner `custom_components` deiner Home-Assistant-Konfiguration kopieren
 und Home Assistant neu starten.
 

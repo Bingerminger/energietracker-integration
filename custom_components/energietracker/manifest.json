@@ -3,10 +3,10 @@
   "name": "Energietracker",
   "codeowners": ["@Bingerminger"],
   "config_flow": true,
-  "documentation": "https://github.com/Bingerminger/energietracker-hacs",
+  "documentation": "https://github.com/Bingerminger/energietracker-integration",
   "integration_type": "hub",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/Bingerminger/energietracker-hacs/issues",
+  "issue_tracker": "https://github.com/Bingerminger/energietracker-integration/issues",
   "requirements": [],
-  "version": "1.0.0"
+  "version": "1.0.1"
 }
