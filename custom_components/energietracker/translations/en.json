@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect Energietracker",
+        "description": "Address at which you open Energietracker, for example {example}. For the Energietracker app in Home Assistant, Energietracker shows the address under Connections → Home Assistant (up to 3.11: Settings → Integrations). A read key is only needed when sign-in is switched on in Energietracker (Connections → Keys → API keys for scripts, scope “Read”; up to 3.11: Settings → Access).",
+        "data": {
+          "url": "Address",
+          "token": "Read key (optional)",
+          "verify_ssl": "Verify the certificate (https)"
+        },
+        "data_description": {
+          "url": "Without /api.php; a sub-folder such as /energietracker is fine.",
+          "token": "Starts with etk_. It stays in Home Assistant.",
+          "verify_ssl": "Switch it off only for https with a certificate of your own."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Read key for Energietracker",
+        "description": "Energietracker refuses the request (401). Sign-in may have been switched on, or the key was revoked. Enter a key with scope “Read”.",
+        "data": {
+          "token": "Read key"
+        },
+        "data_description": {
+          "token": "Starts with etk_. It stays in Home Assistant."
+        }
+      }
+    },
+    "error": {
+      "app_too_old": "Energietracker {version} is too old for this integration. Update it to version {minimum} or later.",
+      "cannot_connect": "Energietracker cannot be reached at this address.",
+      "invalid_auth": "Energietracker refuses the read key (or needs one).",
+      "invalid_response": "The answer does not come from Energietracker (version 3.9.0 or later needed).",
+      "invalid_url": "Enter an address with http:// or https://, without query."
+    },
+    "abort": {
+      "already_configured": "This Energietracker installation is already set up.",
+      "reauth_successful": "The read key has been updated."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "todo_count": {
+        "name": "To do",
+        "state_attributes": {
+          "overdue": { "name": "Overdue or urgent" },
+          "soon": { "name": "Due soon" },
+          "next_upcoming": { "name": "Next appointment" },
+          "items": { "name": "Items" }
+        }
+      },
+      "todo_next": {
+        "name": "Next item",
+        "state_attributes": {
+          "date": { "name": "Date" },
+          "kind": { "name": "Kind" },
+          "severity": { "name": "Urgency" }
+        }
+      },
+      "todo_next_date": { "name": "Next item due" },
+      "todo_upcoming": {
+        "name": "Next appointment",
+        "state_attributes": {
+          "date": { "name": "Date" },
+          "kind": { "name": "Kind" },
+          "severity": { "name": "Urgency" }
+        }
+      },
+      "todo_upcoming_date": { "name": "Next appointment on" },
+      "balance": {
+        "name": "Balance",
+        "state_attributes": {
+          "projected_end_balance": { "name": "Expected at settlement (this contract)" },
+          "projected_end_balance_total": { "name": "Expected at settlement" },
+          "projected_end_range_total": { "name": "Expected range at settlement" },
+          "measured_balance": { "name": "Balance at last reading" },
+          "measured_until": { "name": "Last reading" }
+        }
+      },
+      "year_to_date": { "name": "Consumption this year" },
+      "forecast_12m": { "name": "Forecast 12 months" },
+      "days_since_reading": { "name": "Days since reading" }
+    }
+  },
+  "exceptions": {
+    "app_too_old": {
+      "message": "Energietracker {version} is too old; version {minimum} or later is needed."
+    },
+    "cannot_connect": {
+      "message": "Energietracker cannot be reached."
+    },
+    "invalid_auth": {
+      "message": "Energietracker refuses the read key."
+    },
+    "invalid_response": {
+      "message": "Unexpected answer from Energietracker ({detail})."
+    }
+  },
+  "issues": {
+    "app_too_old": {
+      "title": "Energietracker is too old for the integration",
+      "description": "The Energietracker at {url} runs version {version}. The integration needs version {minimum} or later: it reads the “To do” list, which came with 3.9.0. Until then the sensors stay unavailable.\n\nUpdate Energietracker (Docker image, Home Assistant app or files on your web server). The integration retries by itself, and this notice goes away once the update is in place."
+    }
+  }
+}

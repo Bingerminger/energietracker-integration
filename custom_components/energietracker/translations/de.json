@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Energietracker verbinden",
+        "description": "Adresse, unter der du den Energietracker öffnest, etwa {example}. Bei der App in Home Assistant zeigt der Energietracker die Adresse unter Verbindungen → Home Assistant (bis 3.11: Einstellungen → Integrationen). Einen Lese-Schlüssel braucht es nur, wenn im Energietracker die Anmeldung eingeschaltet ist (Verbindungen → Schlüssel → API-Schlüssel für Skripte, Bereich „Lesen“; bis 3.11: Einstellungen → Zugriff).",
+        "data": {
+          "url": "Adresse",
+          "token": "Lese-Schlüssel (optional)",
+          "verify_ssl": "Zertifikat prüfen (https)"
+        },
+        "data_description": {
+          "url": "Ohne /api.php; ein Unterordner wie /energietracker geht.",
+          "token": "Beginnt mit etk_. Er bleibt in Home Assistant.",
+          "verify_ssl": "Nur bei https mit eigenem Zertifikat ausschalten."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Lese-Schlüssel für den Energietracker",
+        "description": "Der Energietracker lehnt die Anfrage ab (401). Vielleicht wurde die Anmeldung eingeschaltet oder der Schlüssel widerrufen. Trag einen Schlüssel mit Bereich „Lesen“ ein.",
+        "data": {
+          "token": "Lese-Schlüssel"
+        },
+        "data_description": {
+          "token": "Beginnt mit etk_. Er bleibt in Home Assistant."
+        }
+      }
+    },
+    "error": {
+      "app_too_old": "Der Energietracker {version} ist zu alt für diese Integration. Aktualisiere ihn auf Version {minimum} oder neuer.",
+      "cannot_connect": "Unter dieser Adresse ist der Energietracker nicht erreichbar.",
+      "invalid_auth": "Der Energietracker lehnt den Lese-Schlüssel ab (oder braucht einen).",
+      "invalid_response": "Die Antwort kommt nicht vom Energietracker (nötig ist Version 3.9.0 oder neuer).",
+      "invalid_url": "Eine Adresse mit http:// oder https:// eintragen, ohne Abfrage."
+    },
+    "abort": {
+      "already_configured": "Diese Installation des Energietrackers ist schon eingerichtet.",
+      "reauth_successful": "Der Lese-Schlüssel ist aktualisiert."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "todo_count": {
+        "name": "Zu tun",
+        "state_attributes": {
+          "overdue": { "name": "Überfällig oder dringend" },
+          "soon": { "name": "Bald fällig" },
+          "next_upcoming": { "name": "Nächster Termin" },
+          "items": { "name": "Punkte" }
+        }
+      },
+      "todo_next": {
+        "name": "Nächster Punkt",
+        "state_attributes": {
+          "date": { "name": "Datum" },
+          "kind": { "name": "Art" },
+          "severity": { "name": "Dringlichkeit" }
+        }
+      },
+      "todo_next_date": { "name": "Nächster Punkt fällig" },
+      "todo_upcoming": {
+        "name": "Nächster Termin",
+        "state_attributes": {
+          "date": { "name": "Datum" },
+          "kind": { "name": "Art" },
+          "severity": { "name": "Dringlichkeit" }
+        }
+      },
+      "todo_upcoming_date": { "name": "Nächster Termin am" },
+      "balance": {
+        "name": "Saldo",
+        "state_attributes": {
+          "projected_end_balance": { "name": "Erwartet bei Abrechnung (dieser Vertrag)" },
+          "projected_end_balance_total": { "name": "Erwartet bei Abrechnung" },
+          "projected_end_range_total": { "name": "Erwartete Spanne bei Abrechnung" },
+          "measured_balance": { "name": "Saldo zur letzten Ablesung" },
+          "measured_until": { "name": "Letzte Ablesung" }
+        }
+      },
+      "year_to_date": { "name": "Verbrauch seit Jahresbeginn" },
+      "forecast_12m": { "name": "Prognose 12 Monate" },
+      "days_since_reading": { "name": "Tage seit Ablesung" }
+    }
+  },
+  "exceptions": {
+    "app_too_old": {
+      "message": "Der Energietracker {version} ist zu alt; nötig ist Version {minimum} oder neuer."
+    },
+    "cannot_connect": {
+      "message": "Der Energietracker ist nicht erreichbar."
+    },
+    "invalid_auth": {
+      "message": "Der Energietracker lehnt den Lese-Schlüssel ab."
+    },
+    "invalid_response": {
+      "message": "Unerwartete Antwort vom Energietracker ({detail})."
+    }
+  },
+  "issues": {
+    "app_too_old": {
+      "title": "Der Energietracker ist zu alt für die Integration",
+      "description": "Der Energietracker unter {url} läuft mit Version {version}. Die Integration braucht Version {minimum} oder neuer: Sie liest die Liste „Zu tun“, die es seit 3.9.0 gibt. Bis dahin bleiben die Sensoren nicht verfügbar.\n\nAktualisiere den Energietracker (Docker-Image, App in Home Assistant oder Dateien auf deinem Webserver). Die Integration versucht es von selbst weiter, und dieser Hinweis verschwindet, sobald das Update da ist."
+    }
+  }
+}

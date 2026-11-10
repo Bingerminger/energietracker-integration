@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Energietracker koppelen",
+        "description": "Adres waarop je Energietracker opent, bijvoorbeeld {example}. Voor de app in Home Assistant toont Energietracker het adres onder Verbindingen → Home Assistant (tot en met 3.11: Instellingen → Integraties). Een leessleutel is alleen nodig als aanmelden in Energietracker is ingeschakeld (Verbindingen → Sleutels → API-sleutels voor scripts, bereik ‘Lezen’; tot en met 3.11: Instellingen → Toegang).",
+        "data": {
+          "url": "Adres",
+          "token": "Leessleutel (optioneel)",
+          "verify_ssl": "Certificaat controleren (https)"
+        },
+        "data_description": {
+          "url": "Zonder /api.php; een submap zoals /energietracker kan.",
+          "token": "Begint met etk_. Hij blijft in Home Assistant.",
+          "verify_ssl": "Alleen uitschakelen bij https met een eigen certificaat."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Leessleutel voor Energietracker",
+        "description": "Energietracker weigert het verzoek (401). Misschien is aanmelden ingeschakeld of is de sleutel ingetrokken. Vul een sleutel met bereik ‘Lezen’ in.",
+        "data": {
+          "token": "Leessleutel"
+        },
+        "data_description": {
+          "token": "Begint met etk_. Hij blijft in Home Assistant."
+        }
+      }
+    },
+    "error": {
+      "app_too_old": "Energietracker {version} is te oud voor deze integratie. Werk hem bij naar versie {minimum} of nieuwer.",
+      "cannot_connect": "Energietracker is op dit adres niet bereikbaar.",
+      "invalid_auth": "Energietracker weigert de leessleutel (of heeft er een nodig).",
+      "invalid_response": "Het antwoord komt niet van Energietracker (versie 3.9.0 of nieuwer nodig).",
+      "invalid_url": "Vul een adres in met http:// of https://, zonder queryparameters."
+    },
+    "abort": {
+      "already_configured": "Deze installatie van Energietracker is al ingesteld.",
+      "reauth_successful": "De leessleutel is bijgewerkt."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "todo_count": {
+        "name": "Te doen",
+        "state_attributes": {
+          "overdue": { "name": "Vervallen of dringend" },
+          "soon": { "name": "Bijna vervallen" },
+          "next_upcoming": { "name": "Volgende afspraak" },
+          "items": { "name": "Punten" }
+        }
+      },
+      "todo_next": {
+        "name": "Volgend punt",
+        "state_attributes": {
+          "date": { "name": "Datum" },
+          "kind": { "name": "Soort" },
+          "severity": { "name": "Urgentie" }
+        }
+      },
+      "todo_next_date": { "name": "Volgend punt vervalt op" },
+      "todo_upcoming": {
+        "name": "Volgende afspraak",
+        "state_attributes": {
+          "date": { "name": "Datum" },
+          "kind": { "name": "Soort" },
+          "severity": { "name": "Urgentie" }
+        }
+      },
+      "todo_upcoming_date": { "name": "Volgende afspraak op" },
+      "balance": {
+        "name": "Saldo",
+        "state_attributes": {
+          "projected_end_balance": { "name": "Verwacht bij eindafrekening (dit contract)" },
+          "projected_end_balance_total": { "name": "Verwacht bij eindafrekening" },
+          "projected_end_range_total": { "name": "Verwachte bandbreedte bij eindafrekening" },
+          "measured_balance": { "name": "Saldo bij laatste meting" },
+          "measured_until": { "name": "Laatste meting" }
+        }
+      },
+      "year_to_date": { "name": "Verbruik sinds begin van het jaar" },
+      "forecast_12m": { "name": "Prognose 12 maanden" },
+      "days_since_reading": { "name": "Dagen sinds meting" }
+    }
+  },
+  "exceptions": {
+    "app_too_old": {
+      "message": "Energietracker {version} is te oud; versie {minimum} of nieuwer is nodig."
+    },
+    "cannot_connect": {
+      "message": "Energietracker is niet bereikbaar."
+    },
+    "invalid_auth": {
+      "message": "Energietracker weigert de leessleutel."
+    },
+    "invalid_response": {
+      "message": "Onverwacht antwoord van Energietracker ({detail})."
+    }
+  },
+  "issues": {
+    "app_too_old": {
+      "title": "Energietracker is te oud voor de integratie",
+      "description": "De Energietracker op {url} draait versie {version}. De integratie heeft versie {minimum} of nieuwer nodig: ze leest de lijst ‘Te doen’, die met 3.9.0 kwam. Tot dan blijven de sensoren niet beschikbaar.\n\nWerk Energietracker bij (Docker-image, app in Home Assistant of bestanden op je webserver). De integratie probeert het zelf opnieuw, en deze melding verdwijnt zodra de update er is."
+    }
+  }
+}

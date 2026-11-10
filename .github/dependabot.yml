@@ -1,0 +1,8 @@
+version: 2
+updates:
+  # The actions in .github/workflows are pinned to commits; Dependabot keeps
+  # the pins of tagged actions (and the version comments) current.
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

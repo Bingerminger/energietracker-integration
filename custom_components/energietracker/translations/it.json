@@ -1,0 +1,105 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Collega Energietracker",
+        "description": "Indirizzo con cui apri Energietracker, ad esempio {example}. Per l’app in Home Assistant, Energietracker mostra l’indirizzo in Connessioni → Home Assistant (fino alla 3.11: Impostazioni → Integrazioni). Una chiave di lettura serve solo se in Energietracker l’accesso con login è attivo (Connessioni → Chiavi → Chiavi API per script, ambito «Lettura»; fino alla 3.11: Impostazioni → Accesso).",
+        "data": {
+          "url": "Indirizzo",
+          "token": "Chiave di lettura (facoltativa)",
+          "verify_ssl": "Verifica il certificato (https)"
+        },
+        "data_description": {
+          "url": "Senza /api.php; una sottocartella come /energietracker va bene.",
+          "token": "Inizia con etk_. Resta in Home Assistant.",
+          "verify_ssl": "Disattivalo solo per https con un certificato tuo."
+        }
+      },
+      "reauth_confirm": {
+        "title": "Chiave di lettura per Energietracker",
+        "description": "Energietracker rifiuta la richiesta (401). Forse il login è stato attivato o la chiave è stata revocata. Inserisci una chiave con ambito «Lettura».",
+        "data": {
+          "token": "Chiave di lettura"
+        },
+        "data_description": {
+          "token": "Inizia con etk_. Resta in Home Assistant."
+        }
+      }
+    },
+    "error": {
+      "app_too_old": "Energietracker {version} è troppo vecchio per questa integrazione. Aggiornalo alla versione {minimum} o successiva.",
+      "cannot_connect": "Energietracker non è raggiungibile a questo indirizzo.",
+      "invalid_auth": "Energietracker rifiuta la chiave di lettura (o ne richiede una).",
+      "invalid_response": "La risposta non arriva da Energietracker (serve la versione 3.9.0 o successiva).",
+      "invalid_url": "Inserisci un indirizzo con http:// o https://, senza parametri di query."
+    },
+    "abort": {
+      "already_configured": "Questa installazione di Energietracker è già configurata.",
+      "reauth_successful": "La chiave di lettura è stata aggiornata."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "todo_count": {
+        "name": "Da fare",
+        "state_attributes": {
+          "overdue": { "name": "In ritardo o urgenti" },
+          "soon": { "name": "In scadenza" },
+          "next_upcoming": { "name": "Prossimo appuntamento" },
+          "items": { "name": "Voci" }
+        }
+      },
+      "todo_next": {
+        "name": "Prossima voce",
+        "state_attributes": {
+          "date": { "name": "Data" },
+          "kind": { "name": "Tipo" },
+          "severity": { "name": "Urgenza" }
+        }
+      },
+      "todo_next_date": { "name": "Prossima voce in scadenza il" },
+      "todo_upcoming": {
+        "name": "Prossimo appuntamento",
+        "state_attributes": {
+          "date": { "name": "Data" },
+          "kind": { "name": "Tipo" },
+          "severity": { "name": "Urgenza" }
+        }
+      },
+      "todo_upcoming_date": { "name": "Prossimo appuntamento il" },
+      "balance": {
+        "name": "Saldo",
+        "state_attributes": {
+          "projected_end_balance": { "name": "Atteso al conguaglio (questo contratto)" },
+          "projected_end_balance_total": { "name": "Atteso al conguaglio" },
+          "projected_end_range_total": { "name": "Intervallo atteso al conguaglio" },
+          "measured_balance": { "name": "Saldo all’ultima lettura" },
+          "measured_until": { "name": "Ultima lettura" }
+        }
+      },
+      "year_to_date": { "name": "Consumo da inizio anno" },
+      "forecast_12m": { "name": "Previsione 12 mesi" },
+      "days_since_reading": { "name": "Giorni dall’ultima lettura" }
+    }
+  },
+  "exceptions": {
+    "app_too_old": {
+      "message": "Energietracker {version} è troppo vecchio; serve la versione {minimum} o successiva."
+    },
+    "cannot_connect": {
+      "message": "Energietracker non è raggiungibile."
+    },
+    "invalid_auth": {
+      "message": "Energietracker rifiuta la chiave di lettura."
+    },
+    "invalid_response": {
+      "message": "Risposta inattesa da Energietracker ({detail})."
+    }
+  },
+  "issues": {
+    "app_too_old": {
+      "title": "Energietracker è troppo vecchio per l’integrazione",
+      "description": "L’Energietracker all’indirizzo {url} usa la versione {version}. L’integrazione richiede la versione {minimum} o successiva: legge l’elenco «Da fare», arrivato con la 3.9.0. Fino ad allora i sensori restano non disponibili.\n\nAggiorna Energietracker (immagine Docker, app in Home Assistant o file sul tuo server web). L’integrazione riprova da sola e questo avviso scompare appena l’aggiornamento è installato."
+    }
+  }
+}
