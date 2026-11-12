@@ -7,7 +7,9 @@
 
 **Energietracker sensors in Home Assistant, without YAML.** To do, next
 appointment, balance per meter with the expected and the measured balance,
-consumption this year, 12-month forecast and days since the last reading.
+consumption this year, 12-month forecast and days since the last reading;
+stock and fill level of oil and pellet tanks, the forecast of a group contract
+and the payouts of the feed-in.
 Needs Energietracker 3.9.0 or later and Home Assistant 2026.3 or later.
 
 [Energietracker](https://github.com/Bingerminger/energietracker) is the
@@ -17,7 +19,10 @@ self-hosted energy cockpit for your home; this custom integration reads it.
 
 - Energietracker **3.9.0** or later. The attributes for the expected and the
   measured balance, “due soon” and the next appointment need **3.10.0**; with
-  3.9 they stay empty.
+  3.9 they stay empty. Stock and fill level of a tank, the forecast of a group
+  contract and the payouts of the feed-in need **3.13.0**: the sensors appear
+  once Energietracker has the update and the integration is reloaded
+  (**Settings → Devices & services → Energietracker → ⋮ → Reload**).
 - Home Assistant **2026.3** or later.
 
 ## Installation
@@ -82,10 +87,33 @@ One device per meter, named after the kind of energy and the meter
 | Consumption this year | all | since 1 January, in kWh or m³ |
 | Forecast 12 months | all except heating oil and pellets | in kWh or m³ |
 | Days since reading | all | days |
+| Stock | heating oil and pellets (3.13.0) | what is in the tank today, in the unit of the tank (L or kg); attributes `capacity` (in the same unit) and `estimated_from` (the last day with a known stock: initial stock, a delivery “filled up” or a tank reading; from then on the stock is estimated) |
+| Fill level | heating oil and pellets (3.13.0) | stock as a share of the capacity, in % |
+| Already paid out | feed-in with a current contract (3.13.0) | what the grid operator has paid out for the billing year, as recorded at the balance card |
+| Still outstanding | feed-in with a current contract (3.13.0) | balance up to today minus what has been paid out |
+| Outstanding at settlement | feed-in with a current contract (3.13.0) | expected balance at settlement minus what has been paid out |
 
 A group of meters with a group contract (for example a heat pump with two
-tariff meters) gets a device of its own with **Balance** only; its members
-have none. A sum over all balance sensors counts every contract once.
+tariff meters) gets a device of its own with **Balance**; its members have
+none. A sum over all balance sensors counts every contract once. With
+Energietracker 3.13.0 the group also gets:
+
+| Sensor | Value |
+|---|---|
+| Forecast 12 months | the next 12 months of the group (peak plus off-peak), in kWh |
+| Forecast costs 12 months | their costs under the group contract, each register at its own price, with the standing charge, in the currency of the installation |
+
+The members keep their own **Forecast 12 months**; a sum over the members
+and the group would count the group twice.
+
+### Payouts of the feed-in
+
+For the feed-in, **Balance** stays the claim for the billing year (positive =
+the grid operator owes you). The three payout sensors split it up: **Already
+paid out** is the sum of the payouts recorded in Energietracker for the
+billing year (0 until the first one), **Still outstanding** and
+**Outstanding at settlement** are what is left of the claim today and at
+settlement.
 
 ### Balance
 
@@ -115,7 +143,10 @@ In a template: `{{ state_attr('sensor.electricity_main_meter_balance', 'projecte
 - Every new kind of item in Energietracker’s “To do” list counts without an
   update of this integration.
 - Heating oil and pellets: “Days since reading” stays unknown while only
-  deliveries are recorded.
+  deliveries are recorded. **Stock** and **Fill level** come from
+  Energietracker’s tank book: after the last delivery “filled up” or tank
+  reading, the stock is estimated from the consumption so far and the heating
+  degree days.
 
 ## When something is wrong
 
@@ -180,8 +211,10 @@ GNU Affero General Public License v3.0 or later, like Energietracker itself
 
 **Energietracker-Sensoren in Home Assistant, ohne YAML.** Zu tun, nächster
 Termin, Saldo je Zähler mit erwartetem und gemessenem Saldo, Verbrauch seit
-Jahresbeginn, Prognose 12 Monate und Tage seit der letzten Ablesung. Braucht
-den Energietracker 3.9.0 oder neuer und Home Assistant 2026.3 oder neuer.
+Jahresbeginn, Prognose 12 Monate und Tage seit der letzten Ablesung; Bestand
+und Füllstand von Öl- und Pellettanks, die Prognose eines Gruppenvertrags und
+die Auszahlungen der Einspeisung. Braucht den Energietracker 3.9.0 oder neuer
+und Home Assistant 2026.3 oder neuer.
 
 Der [Energietracker](https://github.com/Bingerminger/energietracker) ist das
 selbst gehostete Energie-Cockpit für dein Zuhause; diese Integration liest ihn
@@ -191,7 +224,11 @@ aus.
 
 - Energietracker **3.9.0** oder neuer. Die Attribute für den erwarteten und
   den gemessenen Saldo, „bald fällig“ und den nächsten Termin brauchen
-  **3.10.0**; mit 3.9 bleiben sie leer.
+  **3.10.0**; mit 3.9 bleiben sie leer. Bestand und Füllstand eines Tanks, die
+  Prognose eines Gruppenvertrags und die Auszahlungen der Einspeisung brauchen
+  **3.13.0**: Die Sensoren erscheinen, sobald der Energietracker das Update hat
+  und die Integration neu geladen ist (**Einstellungen → Geräte & Dienste →
+  Energietracker → ⋮ → Neu laden**).
 - Home Assistant **2026.3** oder neuer.
 
 ### Installation
@@ -259,11 +296,33 @@ Hauptzähler“):
 | Verbrauch seit Jahresbeginn | alle | seit dem 1. Januar, in kWh oder m³ |
 | Prognose 12 Monate | alle außer Heizöl und Pellets | in kWh oder m³ |
 | Tage seit Ablesung | alle | Tage |
+| Bestand | Heizöl und Pellets (3.13.0) | was heute im Tank ist, in der Einheit des Tanks (L oder kg); Attribute `capacity` (in derselben Einheit) und `estimated_from` (der letzte Tag mit bekanntem Bestand: Anfangsbestand, Lieferung „bis voll“ oder Peilstand; ab da ist der Bestand geschätzt) |
+| Füllstand | Heizöl und Pellets (3.13.0) | Bestand als Anteil der Kapazität, in % |
+| Bereits ausgezahlt | Einspeisung mit laufendem Vertrag (3.13.0) | was der Netzbetreiber für das Abrechnungsjahr ausgezahlt hat, wie an der Saldo-Karte erfasst |
+| Noch offen | Einspeisung mit laufendem Vertrag (3.13.0) | Saldo bis heute abzüglich der Auszahlungen |
+| Offen bei Abrechnung | Einspeisung mit laufendem Vertrag (3.13.0) | erwarteter Saldo bei Abrechnung abzüglich der Auszahlungen |
 
 Eine Zählergruppe mit Gruppenvertrag (etwa eine Wärmepumpe mit zwei
-Tarifzählern) bekommt ein eigenes Gerät nur mit **Saldo**; ihre Mitglieder
-haben keinen. Wer über alle Saldo-Sensoren summiert, zählt jeden Vertrag
-einmal.
+Tarifzählern) bekommt ein eigenes Gerät mit **Saldo**; ihre Mitglieder haben
+keinen. Wer über alle Saldo-Sensoren summiert, zählt jeden Vertrag einmal. Mit
+dem Energietracker 3.13.0 bekommt die Gruppe dazu:
+
+| Sensor | Wert |
+|---|---|
+| Prognose 12 Monate | die nächsten 12 Monate der Gruppe (HT plus NT), in kWh |
+| Prognose Kosten 12 Monate | ihre Kosten nach dem Gruppenvertrag, jedes Zählwerk zu seinem Preis, mit Grundpreis, in der Währung der Installation |
+
+Die Mitglieder behalten ihre eigene **Prognose 12 Monate**; wer über
+Mitglieder und Gruppe summiert, zählt die Gruppe doppelt.
+
+#### Auszahlungen der Einspeisung
+
+Bei der Einspeisung bleibt **Saldo** der Anspruch im Abrechnungsjahr (positiv =
+der Netzbetreiber schuldet dir Geld). Die drei Sensoren der Auszahlungen
+teilen ihn auf: **Bereits ausgezahlt** ist die Summe der im Energietracker
+erfassten Auszahlungen für das Abrechnungsjahr (0 bis zur ersten), **Noch
+offen** und **Offen bei Abrechnung** sind, was vom Anspruch heute und zur
+Abrechnung übrig ist.
 
 #### Saldo
 
@@ -293,7 +352,10 @@ In einer Vorlage: `{{ state_attr('sensor.strom_hauptzahler_saldo', 'projected_en
   seiner Geräteseite löschen.
 - Jede neue Art von Punkt in „Zu tun“ zählt mit, ohne Update der Integration.
 - Heizöl und Pellets: „Tage seit Ablesung“ bleibt unbekannt, solange nur
-  Lieferungen erfasst sind.
+  Lieferungen erfasst sind. **Bestand** und **Füllstand** kommen aus dem
+  Tankbuch des Energietrackers: Nach der letzten Lieferung „bis voll“ oder dem
+  letzten Peilstand ist der Bestand aus dem bisherigen Verbrauch und den
+  Heizgradtagen geschätzt.
 
 ### Wenn etwas nicht stimmt
 

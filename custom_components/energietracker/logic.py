@@ -26,6 +26,22 @@ MIN_APP_VERSION = (3, 9, 0)
 #: Sensors per meter, in this order.
 METER_SENSORS = ("balance", "year_to_date", "forecast_12m", "days_since_reading")
 
+#: Heating oil and pellets (Energietracker ``tank``): stock in the unit of the
+#: tank (L or kg) and fill level in per cent.
+TANK_SENSORS = ("tank_stock", "tank_level")
+
+#: Feed-in (Energietracker 3.13.0, ``contract.payouts_*``): paid out in the
+#: billing year, still outstanding up to today and at settlement.
+PAYOUT_SENSORS = ("payouts_received", "payouts_open", "payouts_open_at_settle")
+
+#: A group with a group contract (Energietracker 3.13.0,
+#: ``group_forecast_12m``): forecast of the next 12 months and its costs with
+#: standing charge.
+GROUP_FORECAST_SENSORS = ("forecast_12m", "forecast_12m_cost")
+
+#: Every sensor key a meter or a group can get.
+ALL_METER_SENSORS = tuple(dict.fromkeys(METER_SENSORS + TANK_SENSORS + PAYOUT_SENSORS + GROUP_FORECAST_SENSORS))
+
 #: Attributes of the balance sensor, taken from the meter's ``contract``
 #: (Energietracker 3.10.0; older versions leave them empty).
 BALANCE_ATTRIBUTES = (
@@ -35,6 +51,12 @@ BALANCE_ATTRIBUTES = (
     "measured_balance",
     "measured_until",
 )
+
+#: Attributes of the stock sensor, taken from the meter's ``tank``.
+TANK_ATTRIBUTES = ("capacity", "estimated_from")
+
+#: Units of a tank that get a device class; any other unit stays as it is.
+TANK_UNIT_CLASSES = {"L": "volume_storage", "kg": "weight"}
 
 #: Fields of a "To do" item that go into state attributes.
 ITEM_FIELDS = ("title", "date", "kind", "severity")
@@ -106,10 +128,15 @@ def meter_sensor_keys(meter: dict[str, Any]) -> list[str]:
 
     The balance only with a current contract, the forecast not for heating
     oil and pellets (deliveries, ``tank``); consumption since 1 January and
-    days since the last reading always.
+    days since the last reading always. A tank adds stock and fill level, a
+    feed-in contract with ``payouts_received`` (Energietracker 3.13.0) the
+    three payout sensors.
+
+    A group gets the balance and, from Energietracker 3.13.0 on, the forecast
+    of the group contract.
     """
     if meter.get("group"):
-        return ["balance"]
+        return ["balance"] + (list(GROUP_FORECAST_SENSORS) if "forecast_12m" in meter else [])
     keys = []
     for key in METER_SENSORS:
         if key == "balance" and meter.get("contract") is None:
@@ -117,6 +144,11 @@ def meter_sensor_keys(meter: dict[str, Any]) -> list[str]:
         if key == "forecast_12m" and meter.get("tank") is not None:
             continue
         keys.append(key)
+    if isinstance(meter.get("tank"), dict):
+        keys.extend(TANK_SENSORS)
+    contract = meter.get("contract")
+    if isinstance(contract, dict) and contract.get("payouts_received") is not None:
+        keys.extend(PAYOUT_SENSORS)
     return keys
 
 
@@ -126,8 +158,12 @@ def group_meters(summary: dict[str, Any]) -> list[dict[str, Any]]:
     The balance of a group contract (Energietracker 3.9.0, ``group_contract``
     at each member) belongs to the group; the members carry ``contract:
     null``. One balance sensor per group, so a sum over the balance sensors
-    counts it once. Only the balance: consumption and forecast stay with the
-    members.
+    counts it once. Consumption stays with the members.
+
+    Energietracker 3.13.0 adds ``group_forecast_12m`` at each member: the
+    forecast of the group with standing charge and advance payment. The
+    stand-in carries it as its ``forecast_12m`` (the key only when the app
+    sends it, so an older app gets no forecast sensor for the group).
     """
     out: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -139,14 +175,18 @@ def group_meters(summary: dict[str, Any]) -> list[dict[str, Any]]:
         if key in seen:
             continue
         seen.add(key)
-        out.append({
+        group = {
             "key": key,
             "utility": meter.get("utility"),
             "utility_label": meter.get("utility_label"),
             "name": gc.get("name") or gc["group_id"],
+            "consumption_unit": meter.get("consumption_unit"),
             "contract": gc["contract"],
             "group": True,
-        })
+        }
+        if "group_forecast_12m" in meter:
+            group["forecast_12m"] = meter.get("group_forecast_12m")
+        out.append(group)
     return out
 
 
@@ -166,6 +206,14 @@ def meter_value(meter: dict[str, Any], key: str) -> float | int | None:
         return (meter.get("forecast_12m") or {}).get("value")
     if key == "days_since_reading":
         return meter.get("days_since_reading")
+    if key == "forecast_12m_cost":
+        return (meter.get("forecast_12m") or {}).get("cost")
+    if key == "tank_stock":
+        return (meter.get("tank") or {}).get("stock")
+    if key == "tank_level":
+        return (meter.get("tank") or {}).get("percent")
+    if key in PAYOUT_SENSORS:
+        return (meter.get("contract") or {}).get(key)
     raise KeyError(key)
 
 
@@ -182,16 +230,34 @@ def balance_attributes(meter: dict[str, Any]) -> dict[str, Any]:
     return {key: contract.get(key) for key in BALANCE_ATTRIBUTES}
 
 
+def tank_attributes(meter: dict[str, Any]) -> dict[str, Any]:
+    """Capacity of the tank (in the unit of the stock) and the day from which the stock is estimated.
+
+    ``estimated_from`` is the last day with a known stock (initial stock, a
+    delivery "filled up" or a tank reading); from then on Energietracker
+    estimates the stock.
+    """
+    tank = meter.get("tank") or {}
+    return {key: tank.get(key) for key in TANK_ATTRIBUTES}
+
+
 def meter_kind(meter: dict[str, Any], key: str) -> tuple[str | None, str | None]:
     """(device class, unit) of a meter sensor as plain strings.
 
     ``energy`` for kWh, ``water`` for m³ of the utility ``wasser``,
     ``monetary`` in the currency of the installation, ``duration`` in days.
+    The stock of a tank in its own unit: ``volume_storage`` for L,
+    ``weight`` for kg, any other unit without a device class.
     """
-    if key == "balance":
+    if key in ("balance", "forecast_12m_cost") or key in PAYOUT_SENSORS:
         return "monetary", None   # unit: the currency, from the summary
     if key == "days_since_reading":
         return "duration", "d"
+    if key == "tank_level":
+        return None, "%"
+    if key == "tank_stock":
+        unit = (meter.get("tank") or {}).get("unit") or None
+        return TANK_UNIT_CLASSES.get(unit or ""), unit
     unit = meter.get("consumption_unit") or None
     if unit == "kWh":
         return "energy", "kWh"

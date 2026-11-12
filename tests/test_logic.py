@@ -37,6 +37,20 @@ WASSER = {"key": "wasser.m_w", "utility": "wasser", "name": "Garten", "consumpti
           "contract": None, "forecast_12m": None, "tank": None, "year_to_date": None, "days_since_reading": None}
 HEIZOEL = {"key": "heizoel.m_t", "utility": "heizoel", "name": "Tank", "consumption_unit": "kWh",
            "contract": {"balance": None}, "forecast_12m": None, "tank": {"stock": 1200}}
+# Energietracker 3.13.0: tank as /api/summary returns it (invented values)
+OELTANK = {"key": "heizoel.m_oel", "utility": "heizoel", "utility_label": "Heizöl", "name": "Keller",
+           "consumption_unit": "kWh", "contract": None, "forecast_12m": None, "days_since_reading": None,
+           "year_to_date": {"value": 4120.0, "estimated": True},
+           "tank": {"stock": 2631.8, "capacity": 3000.0, "unit": "L", "percent": 87.7, "estimated_from": "2025-09-17"}}
+PELLETS = {"key": "pellets.m_lager", "utility": "pellets", "name": "Lager", "consumption_unit": "kWh",
+           "contract": None, "forecast_12m": None,
+           "tank": {"stock": 4635.4, "capacity": 5000.0, "unit": "kg", "percent": 92.7, "estimated_from": None}}
+# Energietracker 3.13.0: feed-in with payouts in the billing year (invented values)
+EINSPEISUNG = {"key": "pv_einspeisung.m_pv", "utility": "pv_einspeisung", "utility_label": "PV-Einspeisung",
+               "name": "Netz", "consumption_unit": "kWh", "days_since_reading": 3, "tank": None,
+               "year_to_date": {"value": 5210.4, "estimated": False}, "forecast_12m": {"value": 6542.6, "cost": 536.48},
+               "contract": {"balance": 522.14, "projected_end_balance": 539.9,
+                            "payouts_received": 60.0, "payouts_open": 462.14, "payouts_open_at_settle": 479.9}}
 
 
 class UrlTest(unittest.TestCase):
@@ -87,8 +101,8 @@ class MeterTest(unittest.TestCase):
         self.assertEqual(["balance", "year_to_date", "forecast_12m", "days_since_reading"], logic.meter_sensor_keys(STROM))
         self.assertEqual(["year_to_date", "forecast_12m", "days_since_reading"], logic.meter_sensor_keys(WASSER),
                          "without a contract no balance")
-        self.assertEqual(["balance", "year_to_date", "days_since_reading"], logic.meter_sensor_keys(HEIZOEL),
-                         "deliveries have no forecast")
+        self.assertEqual(["balance", "year_to_date", "days_since_reading", "tank_stock", "tank_level"],
+                         logic.meter_sensor_keys(HEIZOEL), "deliveries have no forecast, but stock and fill level")
 
     def test_values_and_missing_values(self):
         self.assertEqual(-41.3, logic.meter_value(STROM, "balance"))
@@ -133,6 +147,18 @@ class MeterTest(unittest.TestCase):
         self.assertEqual([], logic.group_meters({"meters": [dict(ht, group_contract=None)]}))
         self.assertEqual([], logic.group_meters({"meters": [dict(ht, group_contract={"group_id": "g", "contract": None})]}))
 
+    def test_summary_of_3_12_keeps_its_sensors(self):
+        """Without the fields of 3.13.0 every meter keeps the sensors of integration 1.0."""
+        self.assertEqual(["balance", "year_to_date", "forecast_12m", "days_since_reading"], logic.meter_sensor_keys(STROM))
+        feed_in_312 = dict(EINSPEISUNG, contract={"balance": 522.14, "projected_end_balance": 539.9})
+        self.assertEqual(["balance", "year_to_date", "forecast_12m", "days_since_reading"],
+                         logic.meter_sensor_keys(feed_in_312), "no payout keys, no payout sensors")
+        tank_without_data = dict(OELTANK, tank=None)
+        self.assertEqual(["year_to_date", "forecast_12m", "days_since_reading"], logic.meter_sensor_keys(tank_without_data),
+                         "a tank without stock (tank: null) stays as in 1.0")
+        self.assertTrue(set(logic.METER_SENSORS) <= set(logic.ALL_METER_SENSORS))
+        self.assertEqual(len(set(logic.ALL_METER_SENSORS)), len(logic.ALL_METER_SENSORS))
+
     def test_balance_attributes(self):
         self.assertEqual({
             "projected_end_balance": -12.5, "projected_end_balance_total": -30.25,
@@ -144,6 +170,109 @@ class MeterTest(unittest.TestCase):
         self.assertIsNone(attrs["projected_end_balance_total"], "Energietracker 3.9: key missing, attribute empty")
         self.assertEqual(set(logic.BALANCE_ATTRIBUTES), set(logic.balance_attributes(WASSER)))
         self.assertTrue(all(v is None for v in logic.balance_attributes(WASSER).values()))
+
+
+class TankTest(unittest.TestCase):
+    """Heating oil and pellets: stock and fill level from ``tank`` (Energietracker 3.13.0)."""
+
+    def test_which_sensors(self):
+        self.assertEqual(["year_to_date", "days_since_reading", "tank_stock", "tank_level"], logic.meter_sensor_keys(OELTANK))
+        self.assertEqual(["year_to_date", "days_since_reading", "tank_stock", "tank_level"], logic.meter_sensor_keys(PELLETS))
+        for meter in (STROM, WASSER, EINSPEISUNG):
+            self.assertNotIn("tank_stock", logic.meter_sensor_keys(meter), meter["key"])
+
+    def test_values(self):
+        self.assertEqual(2631.8, logic.meter_value(OELTANK, "tank_stock"))
+        self.assertEqual(87.7, logic.meter_value(OELTANK, "tank_level"))
+        self.assertEqual(4635.4, logic.meter_value(PELLETS, "tank_stock"))
+        self.assertEqual(92.7, logic.meter_value(PELLETS, "tank_level"))
+        self.assertIsNone(logic.meter_value(dict(OELTANK, tank=None), "tank_stock"))
+        self.assertIsNone(logic.meter_value(dict(OELTANK, tank={"stock": 10.0, "percent": None}), "tank_level"))
+
+    def test_unit_as_in_the_app(self):
+        self.assertEqual(("volume_storage", "L"), logic.meter_kind(OELTANK, "tank_stock"))
+        self.assertEqual(("weight", "kg"), logic.meter_kind(PELLETS, "tank_stock"))
+        self.assertEqual((None, "%"), logic.meter_kind(OELTANK, "tank_level"))
+        other = dict(PELLETS, tank=dict(PELLETS["tank"], unit="Sack"))
+        self.assertEqual((None, "Sack"), logic.meter_kind(other, "tank_stock"), "any other unit without a device class")
+        self.assertEqual((None, None), logic.meter_kind(dict(PELLETS, tank=dict(PELLETS["tank"], unit="")), "tank_stock"))
+
+    def test_attributes(self):
+        self.assertEqual({"capacity": 3000.0, "estimated_from": "2025-09-17"}, logic.tank_attributes(OELTANK))
+        self.assertEqual({"capacity": 5000.0, "estimated_from": None}, logic.tank_attributes(PELLETS))
+        self.assertEqual({"capacity": None, "estimated_from": None}, logic.tank_attributes(dict(OELTANK, tank=None)))
+
+
+class GroupForecastTest(unittest.TestCase):
+    """``group_forecast_12m`` of a group with a group contract (Energietracker 3.13.0)."""
+
+    GC = {"group_id": "g_wp", "name": "Wärmepumpe", "contract": {"balance": -23.6}}
+    GF = {"group_id": "g_wp", "value": 773.1, "cost": 311.81, "low": 739.7, "high": 806.5}
+    HT = {"key": "strom.m_ht", "utility": "strom", "utility_label": "Strom", "name": "WP HT", "contract": None,
+          "group_contract": GC, "group_forecast_12m": GF, "consumption_unit": "kWh", "tank": None,
+          "forecast_12m": {"value": 448.3, "cost": 122.86}}
+    NT = dict(HT, key="strom.m_nt", name="WP NT", forecast_12m={"value": 324.8, "cost": 70.15})
+
+    def group(self, *members):
+        groups = logic.group_meters({"meters": list(members)})
+        self.assertEqual(1, len(groups))
+        return groups[0]
+
+    def test_group_gets_forecast_and_costs(self):
+        group = self.group(self.HT, self.NT)
+        self.assertEqual(["balance", "forecast_12m", "forecast_12m_cost"], logic.meter_sensor_keys(group))
+        self.assertEqual(773.1, logic.meter_value(group, "forecast_12m"), "HT + NT, from the group")
+        self.assertEqual(311.81, logic.meter_value(group, "forecast_12m_cost"), "with standing charge")
+        self.assertEqual(("energy", "kWh"), logic.meter_kind(group, "forecast_12m"), "unit of the members")
+        self.assertEqual(("monetary", None), logic.meter_kind(group, "forecast_12m_cost"))
+
+    def test_members_keep_their_sensors(self):
+        self.assertEqual(["year_to_date", "forecast_12m", "days_since_reading"], logic.meter_sensor_keys(self.HT))
+        self.assertEqual(448.3, logic.meter_value(self.HT, "forecast_12m"), "the register's own forecast")
+
+    def test_forecast_without_value(self):
+        group = self.group(dict(self.HT, group_forecast_12m=None))
+        self.assertEqual(["balance", "forecast_12m", "forecast_12m_cost"], logic.meter_sensor_keys(group),
+                         "the app sends the key: the sensors exist, unknown until there is a forecast")
+        self.assertIsNone(logic.meter_value(group, "forecast_12m"))
+        self.assertIsNone(logic.meter_value(group, "forecast_12m_cost"))
+
+    def test_app_before_3_13(self):
+        member = {k: v for k, v in self.HT.items() if k != "group_forecast_12m"}
+        group = self.group(member)
+        self.assertEqual(["balance"], logic.meter_sensor_keys(group))
+        self.assertNotIn("forecast_12m", group)
+
+
+class PayoutTest(unittest.TestCase):
+    """Payouts of the feed-in (Energietracker 3.13.0, ``contract.payouts_*``)."""
+
+    def test_which_sensors(self):
+        self.assertEqual(["balance", "year_to_date", "forecast_12m", "days_since_reading",
+                          "payouts_received", "payouts_open", "payouts_open_at_settle"], logic.meter_sensor_keys(EINSPEISUNG))
+        none_yet = dict(EINSPEISUNG, contract=dict(EINSPEISUNG["contract"], payouts_received=0.0,
+                                                   payouts_open=522.14, payouts_open_at_settle=539.9))
+        self.assertEqual(logic.meter_sensor_keys(EINSPEISUNG), logic.meter_sensor_keys(none_yet),
+                         "0 received is a value: the sensors exist before the first payout")
+        other = dict(STROM, contract=dict(STROM["contract"], payouts_received=None, payouts_open=None,
+                                          payouts_open_at_settle=None))
+        self.assertEqual(["balance", "year_to_date", "forecast_12m", "days_since_reading"], logic.meter_sensor_keys(other),
+                         "other contracts carry the keys as null")
+
+    def test_values_and_kind(self):
+        self.assertEqual(60.0, logic.meter_value(EINSPEISUNG, "payouts_received"))
+        self.assertEqual(462.14, logic.meter_value(EINSPEISUNG, "payouts_open"))
+        self.assertEqual(479.9, logic.meter_value(EINSPEISUNG, "payouts_open_at_settle"))
+        self.assertEqual(522.14, logic.meter_value(EINSPEISUNG, "balance"), "the balance stays the claim")
+        for key in logic.PAYOUT_SENSORS:
+            self.assertEqual(("monetary", None), logic.meter_kind(EINSPEISUNG, key), key)
+            self.assertIsNone(logic.meter_value(dict(EINSPEISUNG, contract=None), key), key)
+
+    def test_every_key_has_a_value_and_a_kind(self):
+        for key in logic.ALL_METER_SENSORS:
+            for meter in (STROM, OELTANK, EINSPEISUNG):
+                logic.meter_value(meter, key)
+                logic.meter_kind(meter, key)
 
 
 class TodoTest(unittest.TestCase):

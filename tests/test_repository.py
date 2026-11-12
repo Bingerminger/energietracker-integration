@@ -83,7 +83,8 @@ class TranslationTest(unittest.TestCase):
                 self.assertNotRegex(other[key], r"https?://[\w\[]", f"{lang}: {key}")
 
     def test_keys_used_in_the_code_exist(self):
-        sensor_keys = set(re.findall(r'_attr_translation_key = "(\w+)"', source("sensor.py"))) | set(logic.METER_SENSORS)
+        # MeterSensor takes its key from the logic, so every key of ALL_METER_SENSORS counts
+        sensor_keys = set(re.findall(r'_attr_translation_key = "(\w+)"', source("sensor.py"))) | set(logic.ALL_METER_SENSORS)
         for key in sensor_keys:
             self.assertIn(f"entity.sensor.{key}.name", self.EN, key)
         for key in set(re.findall(r'errors\[[^\]]+\] = "(\w+)"', source("config_flow.py"))):
@@ -108,6 +109,43 @@ class TranslationTest(unittest.TestCase):
         sensors = load("en")["entity"]["sensor"]
         self.assertEqual(set(logic.BALANCE_ATTRIBUTES), set(sensors["balance"]["state_attributes"]))
         self.assertEqual(set(logic.todo_attributes({})), set(sensors["todo_count"]["state_attributes"]))
+        self.assertEqual(set(logic.TANK_ATTRIBUTES), set(sensors["tank_stock"]["state_attributes"]))
+        self.assertEqual(set(logic.TANK_ATTRIBUTES), set(logic.tank_attributes({})))
+
+    def test_no_sensor_name_twice_on_a_device(self):
+        """Names of the sensors of one meter or group differ in every language."""
+        for lang in LANGUAGES:
+            sensors = load(lang)["entity"]["sensor"]
+            names = [sensors[key]["name"] for key in logic.ALL_METER_SENSORS]
+            self.assertEqual(len(names), len(set(names)), lang)
+
+
+class SensorMappingTest(unittest.TestCase):
+    """Every device class and unit the logic returns has its Home Assistant constant in sensor.py."""
+
+    def mapping(self, name: str) -> set[str]:
+        block = re.search(rf"^{name} = \{{(.*?)^\}}|^{name} = \{{(.*?)\}}$", source("sensor.py"), re.S | re.M)
+        self.assertIsNotNone(block, name)
+        return set(re.findall(r'"([^"]+)":', block.group(1) or block.group(2)))
+
+    def test_device_classes_and_units(self):
+        meters = [
+            {"utility": "strom", "consumption_unit": "kWh", "tank": None},
+            {"utility": "wasser", "consumption_unit": "m³", "tank": None},
+            {"utility": "heizoel", "consumption_unit": "kWh", "tank": {"unit": "L"}},
+            {"utility": "pellets", "consumption_unit": "kWh", "tank": {"unit": "kg"}},
+        ]
+        classes, units = set(), set()
+        for meter in meters:
+            for key in logic.ALL_METER_SENSORS:
+                device_class, unit = logic.meter_kind(meter, key)
+                if device_class:
+                    classes.add(device_class)
+                if unit:
+                    units.add(unit)
+        self.assertEqual({"energy", "water", "monetary", "duration", "volume_storage", "weight"}, classes)
+        self.assertTrue(classes <= self.mapping("DEVICE_CLASSES"), classes - self.mapping("DEVICE_CLASSES"))
+        self.assertTrue(units <= self.mapping("UNITS"), units - self.mapping("UNITS"))
 
 
 class ReadmeTest(unittest.TestCase):
@@ -122,6 +160,16 @@ class ReadmeTest(unittest.TestCase):
         for old in ("Settings → Access → API keys", "Einstellungen → Zugriff → API-Schlüssel",
                     "Settings → Integrations → Notifications", "Einstellungen → Integrationen → Benachrichtigungen"):
             self.assertNotIn(old, self.README)
+
+    def test_every_meter_sensor_in_both_halves(self):
+        """The tables "Sensors" and "Sensoren" name every sensor of a meter or group, in the words of the translations."""
+        english, german = self.README.split("\n## Deutsch\n", 1)
+        for half, lang in ((english, "en"), (german, "de")):
+            sensors = load(lang)["entity"]["sensor"]
+            for key in logic.ALL_METER_SENSORS:
+                self.assertIn(f"| {sensors[key]['name']} |", half, f"{lang}: {key}")
+            for attribute in logic.TANK_ATTRIBUTES:
+                self.assertIn(f"`{attribute}`", half, f"{lang}: {attribute}")
 
 
 class ManifestTest(unittest.TestCase):

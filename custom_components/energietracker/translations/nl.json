@@ -79,7 +79,19 @@
       },
       "year_to_date": { "name": "Verbruik sinds begin van het jaar" },
       "forecast_12m": { "name": "Prognose 12 maanden" },
-      "days_since_reading": { "name": "Dagen sinds meting" }
+      "days_since_reading": { "name": "Dagen sinds meting" },
+      "forecast_12m_cost": { "name": "Prognose kosten 12 maanden" },
+      "tank_stock": {
+        "name": "Voorraad",
+        "state_attributes": {
+          "capacity": { "name": "Inhoud" },
+          "estimated_from": { "name": "Geschat vanaf" }
+        }
+      },
+      "tank_level": { "name": "Vulniveau" },
+      "payouts_received": { "name": "Al uitbetaald" },
+      "payouts_open": { "name": "Nog open" },
+      "payouts_open_at_settle": { "name": "Open bij eindafrekening" }
     }
   },
   "exceptions": {

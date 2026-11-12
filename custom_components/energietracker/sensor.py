@@ -1,4 +1,4 @@
-"""Sensors: "To do" for the installation, balance, consumption and forecast per meter."""
+"""Sensors: "To do" for the installation; balance, consumption, forecast, tank and payouts per meter."""
 
 from __future__ import annotations
 
@@ -6,7 +6,7 @@ from datetime import date
 from typing import Any
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
-from homeassistant.const import UnitOfEnergy, UnitOfTime, UnitOfVolume
+from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfMass, UnitOfTime, UnitOfVolume
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr
 from homeassistant.helpers.device_registry import DeviceInfo
@@ -24,6 +24,7 @@ from .logic import (
     meter_sensor_keys,
     meter_value,
     parse_date,
+    tank_attributes,
     todo_attributes,
     todo_next,
     todo_upcoming,
@@ -36,8 +37,23 @@ DEVICE_CLASSES = {
     "water": SensorDeviceClass.WATER,
     "monetary": SensorDeviceClass.MONETARY,
     "duration": SensorDeviceClass.DURATION,
+    "volume_storage": SensorDeviceClass.VOLUME_STORAGE,
+    "weight": SensorDeviceClass.WEIGHT,
 }
-UNITS = {"kWh": UnitOfEnergy.KILO_WATT_HOUR, "m³": UnitOfVolume.CUBIC_METERS, "d": UnitOfTime.DAYS}
+UNITS = {
+    "kWh": UnitOfEnergy.KILO_WATT_HOUR,
+    "m³": UnitOfVolume.CUBIC_METERS,
+    "d": UnitOfTime.DAYS,
+    "L": UnitOfVolume.LITERS,
+    "kg": UnitOfMass.KILOGRAMS,
+    "%": PERCENTAGE,
+}
+
+#: Sensors without a device class get an icon of their own.
+ICONS = {"tank_level": "mdi:gauge"}
+
+#: Whole litres, kilograms and per cent; amounts in cents; the rest with one decimal.
+DISPLAY_PRECISION = {"tank_stock": 0, "tank_level": 0}
 
 #: Home Assistant 2026.8 links a device to its hub by the registry id
 #: (``via_device_id``); the identifier pair (``via_device``) is deprecated and
@@ -200,7 +216,10 @@ class TodoUpcomingDateSensor(EnergietrackerEntity, SensorEntity):
 class MeterSensor(EnergietrackerEntity, SensorEntity):
     """Balance, consumption since 1 January, forecast of the next 12 months, days since the last reading.
 
-    A group with a group contract gets its own device with the balance only.
+    Heating oil and pellets add stock and fill level of the tank, a feed-in
+    contract the payouts (Energietracker 3.13.0). A group with a group
+    contract gets its own device with the balance and, from Energietracker
+    3.13.0 on, the forecast of the group contract and its costs.
 
     Balance with Energietracker's sign: positive = back-payment (feed-in:
     payout), negative = refund; the state is the balance up to today, the
@@ -219,11 +238,15 @@ class MeterSensor(EnergietrackerEntity, SensorEntity):
         self._attr_unique_id = f"{instance}_{self._meter_key}_{key}"
         device_class, unit = meter_kind(meter, key)
         self._attr_device_class = DEVICE_CLASSES.get(device_class or "")
-        if key == "balance":
+        if device_class == "monetary":
             unit = str(coordinator.data.summary.get("currency") or "EUR")
             self._attr_suggested_display_precision = 2
+        elif key in DISPLAY_PRECISION:
+            self._attr_suggested_display_precision = DISPLAY_PRECISION[key]
         elif key != "days_since_reading":
             self._attr_suggested_display_precision = 1
+        if key in ICONS:
+            self._attr_icon = ICONS[key]
         self._attr_native_unit_of_measurement = UNITS.get(unit or "", unit)
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, f"{instance}_{self._meter_key}")},
@@ -250,8 +273,10 @@ class MeterSensor(EnergietrackerEntity, SensorEntity):
 
     @property
     def extra_state_attributes(self) -> dict[str, Any] | None:
-        """The balance carries the expected and the measured balance (Energietracker 3.10.0)."""
-        if self._key != "balance":
+        """The balance carries the expected and the measured balance (Energietracker 3.10.0), the stock the capacity."""
+        if self._key not in ("balance", "tank_stock"):
             return None
         meter = self._meter()
-        return balance_attributes(meter) if meter else None
+        if not meter:
+            return None
+        return balance_attributes(meter) if self._key == "balance" else tank_attributes(meter)

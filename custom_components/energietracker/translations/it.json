@@ -79,7 +79,19 @@
       },
       "year_to_date": { "name": "Consumo da inizio anno" },
       "forecast_12m": { "name": "Previsione 12 mesi" },
-      "days_since_reading": { "name": "Giorni dall’ultima lettura" }
+      "days_since_reading": { "name": "Giorni dall’ultima lettura" },
+      "forecast_12m_cost": { "name": "Previsione costi 12 mesi" },
+      "tank_stock": {
+        "name": "Scorta",
+        "state_attributes": {
+          "capacity": { "name": "Capacità" },
+          "estimated_from": { "name": "Stimata dal" }
+        }
+      },
+      "tank_level": { "name": "Livello di riempimento" },
+      "payouts_received": { "name": "Già liquidato" },
+      "payouts_open": { "name": "Ancora da ricevere" },
+      "payouts_open_at_settle": { "name": "Da ricevere al conguaglio" }
     }
   },
   "exceptions": {

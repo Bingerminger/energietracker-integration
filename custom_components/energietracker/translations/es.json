@@ -79,7 +79,19 @@
       },
       "year_to_date": { "name": "Consumo desde inicio de año" },
       "forecast_12m": { "name": "Previsión 12 meses" },
-      "days_since_reading": { "name": "Días desde la lectura" }
+      "days_since_reading": { "name": "Días desde la lectura" },
+      "forecast_12m_cost": { "name": "Previsión de costes 12 meses" },
+      "tank_stock": {
+        "name": "Existencias",
+        "state_attributes": {
+          "capacity": { "name": "Capacidad" },
+          "estimated_from": { "name": "Estimadas desde" }
+        }
+      },
+      "tank_level": { "name": "Nivel de llenado" },
+      "payouts_received": { "name": "Ya abonado" },
+      "payouts_open": { "name": "Pendiente de cobro" },
+      "payouts_open_at_settle": { "name": "Pendiente de cobro en la liquidación" }
     }
   },
   "exceptions": {

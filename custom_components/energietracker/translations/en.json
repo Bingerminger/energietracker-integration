@@ -79,7 +79,19 @@
       },
       "year_to_date": { "name": "Consumption this year" },
       "forecast_12m": { "name": "Forecast 12 months" },
-      "days_since_reading": { "name": "Days since reading" }
+      "days_since_reading": { "name": "Days since reading" },
+      "forecast_12m_cost": { "name": "Forecast costs 12 months" },
+      "tank_stock": {
+        "name": "Stock",
+        "state_attributes": {
+          "capacity": { "name": "Capacity" },
+          "estimated_from": { "name": "Estimated since" }
+        }
+      },
+      "tank_level": { "name": "Fill level" },
+      "payouts_received": { "name": "Already paid out" },
+      "payouts_open": { "name": "Still outstanding" },
+      "payouts_open_at_settle": { "name": "Outstanding at settlement" }
     }
   },
   "exceptions": {
