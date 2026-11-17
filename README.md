@@ -27,22 +27,16 @@ self-hosted energy cockpit for your home; this custom integration reads it.
 
 ## Installation
 
-**Search for “Energietracker”** in the Marketplace or in HACS. The buttons
-above open it directly: the first in the Marketplace (Home Assistant 2026.11 or
-later), the second in HACS.
-
-**Home Assistant 2026.11 or later: in the Marketplace.** Since 2026.11, HACS is
-built into Home Assistant as the **Marketplace**.
+**Search for “Energietracker” in the Marketplace (formerly HACS).** The
+integration is in the default list of the Marketplace. The buttons above open
+it directly: the first in the Marketplace, the second in HACS.
 
 1. Marketplace → search for **Energietracker** → **Download**, then restart
    Home Assistant.
 2. **Settings → Devices & services → Add integration → Energietracker**.
 
-**Home Assistant 2026.3 to 2026.10: with HACS.**
-
-1. HACS → search for **Energietracker** → **Download**, then restart Home
-   Assistant.
-2. **Settings → Devices & services → Add integration → Energietracker**.
+**Home Assistant 2026.3 to 2026.10:** use HACS instead and search the
+same way (HACS → search for **Energietracker** → **Download**).
 
 **By hand:** copy the folder `custom_components/energietracker` of the
 [latest release](https://github.com/Bingerminger/energietracker-integration/releases/latest)
@@ -162,8 +156,9 @@ Settings → Integrations); that needs no integration. See the
 ## Removal
 
 **Settings → Devices & services → Energietracker → ⋮ → Delete**, then remove
-the integration in the Marketplace or in HACS (or delete the folder
-`custom_components/energietracker`) and restart Home Assistant.
+the integration in the Marketplace (up to Home Assistant 2026.10: in HACS), or
+delete the folder `custom_components/energietracker`, and restart Home
+Assistant.
 
 ## Questions and bugs
 
@@ -228,22 +223,16 @@ aus.
 
 ### Installation
 
-**Nach „Energietracker“ suchen** im Marketplace oder in HACS. Die Knöpfe oben
-öffnen sie direkt: der erste im Marketplace (Home Assistant ab 2026.11), der
-zweite in HACS.
-
-**Home Assistant ab 2026.11: im Marketplace.** Seit 2026.11 ist HACS als
-**Marketplace** fest in Home Assistant eingebaut.
+**Im Marketplace (ehemals HACS) nach „Energietracker“ suchen.** Die
+Integration steht in der Standardliste des Marketplace. Die Knöpfe oben öffnen
+sie direkt: der erste im Marketplace, der zweite in HACS.
 
 1. Marketplace → nach **Energietracker** suchen → **Herunterladen**, dann Home
    Assistant neu starten.
 2. **Einstellungen → Geräte & Dienste → Integration hinzufügen → Energietracker**.
 
-**Home Assistant 2026.3 bis 2026.10: mit HACS.**
-
-1. HACS → nach **Energietracker** suchen → **Herunterladen**, dann Home
-   Assistant neu starten.
-2. **Einstellungen → Geräte & Dienste → Integration hinzufügen → Energietracker**.
+**Home Assistant 2026.3 bis 2026.10:** Dort heißt der Weg HACS, ebenfalls über
+die Suche (HACS → nach **Energietracker** suchen → **Herunterladen**).
 
 **Von Hand:** den Ordner `custom_components/energietracker` aus dem
 [neuesten Release](https://github.com/Bingerminger/energietracker-integration/releases/latest)
@@ -363,8 +352,9 @@ Einstellungen → Integrationen); dafür braucht es keine Integration. Siehe
 ### Entfernen
 
 **Einstellungen → Geräte & Dienste → Energietracker → ⋮ → Löschen**, danach
-die Integration im Marketplace oder in HACS entfernen (oder den Ordner
-`custom_components/energietracker` löschen) und Home Assistant neu starten.
+die Integration im Marketplace entfernen (bis Home Assistant 2026.10 in HACS)
+oder den Ordner `custom_components/energietracker` löschen und Home Assistant
+neu starten.
 
 ### Fragen und Fehler
 
